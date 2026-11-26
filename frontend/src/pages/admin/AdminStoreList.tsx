@@ -26,7 +26,10 @@ const AdminStoreList: React.FC = () => {
   const fetchStores = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ ...filters, sortBy: sort.key, sortOrder: sort.order, page: String(page), limit: String(limit) });
+      const params = new URLSearchParams({ sortBy: sort.key, sortOrder: sort.order, page: String(page), limit: String(limit) });
+      if (filters.name) params.set('name', filters.name);
+      if (filters.email) params.set('email', filters.email);
+      if (filters.address) params.set('address', filters.address);
       const res = await api.get(`/admin/stores?${params}`);
       setStores(res.data.stores);
       setTotal(res.data.total);

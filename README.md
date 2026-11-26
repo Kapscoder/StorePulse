@@ -1,6 +1,6 @@
 # 🏪 StorePulse — Store Rating Management System
 
-A full-stack web application for managing store ratings. Built with **Express + Prisma + PostgreSQL** (backend) and **React + TailwindCSS** (frontend).
+A full-stack web application for managing store ratings. Built with **Express + Prisma + MongoDB** (backend) and **React + TailwindCSS** (frontend).
 
 ---
 
@@ -8,30 +8,23 @@ A full-stack web application for managing store ratings. Built with **Express + 
 
 ### Prerequisites
 - Node.js 18+
-- PostgreSQL 14+ (running locally)
+- MongoDB Atlas (or local MongoDB replica set)
 - npm 9+
 
-### 1. Database Setup
-
-```sql
--- In psql or pgAdmin
-CREATE DATABASE storepulse_db;
-```
-
-### 2. Backend Setup
+### 1. Backend Setup
 
 ```bash
 cd backend
 
 # Copy env template and configure
 cp .env.example .env
-# Edit .env: set DATABASE_URL with your PostgreSQL credentials
+# Edit .env: set DATABASE_URL with your MongoDB connection string
 
 # Install dependencies
 npm install
 
-# Run Prisma migrations
-npx prisma migrate dev --name init
+# Push Prisma schema & indexes to MongoDB
+npx prisma db push
 
 # Seed the admin user
 npm run db:seed
@@ -151,7 +144,7 @@ StorePulse/
 |-------|-----------|
 | Backend | Node.js, Express.js, TypeScript |
 | ORM | Prisma 5 |
-| Database | PostgreSQL |
+| Database | MongoDB |
 | Auth | JWT (jsonwebtoken), bcrypt |
 | Validation | express-validator (backend), Zod (frontend) |
 | Frontend | React 18, TypeScript, Vite |

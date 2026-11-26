@@ -32,7 +32,6 @@ model User {
   // Ratings submitted by this user
   ratings   Rating[]
 
-  @@index([email])
   @@index([name])
   @@map("users")
 }

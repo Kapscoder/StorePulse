@@ -78,14 +78,14 @@ export const validateCreateStore: ValidationChain[] = [
 
 // ── Rating validator ─────────────────────────────────────────────
 export const validateRating: ValidationChain[] = [
-  body('storeId').isUUID().withMessage('Valid store ID required'),
+  body('storeId').isMongoId().withMessage('Valid store ID required'),
   body('rating')
     .isFloat({ min: 1, max: 5 })
     .withMessage('Rating must be between 1 and 5'),
 ];
 
 export const validateRatingUpdate: ValidationChain[] = [
-  param('storeId').isUUID().withMessage('Valid store ID required'),
+  param('storeId').isMongoId().withMessage('Valid store ID required'),
   body('rating')
     .isFloat({ min: 1, max: 5 })
     .withMessage('Rating must be between 1 and 5'),
@@ -93,12 +93,12 @@ export const validateRatingUpdate: ValidationChain[] = [
 
 // ── Listing query validators ─────────────────────────────────────
 export const validateListQuery: ValidationChain[] = [
-  query('name').optional().trim(),
-  query('email').optional().trim().isEmail().optional(),
-  query('address').optional().trim(),
-  query('role').optional().isIn(['admin', 'normal_user', 'store_owner']).optional(),
-  query('sortBy').optional().isIn(['name', 'email', 'address', 'role', 'rating', 'createdAt']).optional(),
-  query('sortOrder').optional().isIn(['asc', 'desc']).optional(),
-  query('page').optional().isInt({ min: 1 }).optional(),
-  query('limit').optional().isInt({ min: 1, max: 100 }).optional(),
+  query('name').optional({ values: 'falsy' }).trim(),
+  query('email').optional({ values: 'falsy' }).trim(),
+  query('address').optional({ values: 'falsy' }).trim(),
+  query('role').optional({ values: 'falsy' }).isIn(['admin', 'normal_user', 'store_owner']),
+  query('sortBy').optional({ values: 'falsy' }).isIn(['name', 'email', 'address', 'role', 'rating', 'createdAt']),
+  query('sortOrder').optional({ values: 'falsy' }).isIn(['asc', 'desc']),
+  query('page').optional({ values: 'falsy' }).isInt({ min: 1 }),
+  query('limit').optional({ values: 'falsy' }).isInt({ min: 1, max: 100 }),
 ];
