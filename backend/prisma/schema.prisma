@@ -1,12 +1,12 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Prisma schema — MongoDB provider
+// Learn more: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
@@ -17,17 +17,17 @@ enum Role {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String   @db.VarChar(60)
-  email     String   @unique @db.VarChar(255)
-  password  String   @db.VarChar(255)
-  address   String?  @db.VarChar(400)
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String   @unique
+  password  String
+  address   String?
   role      Role     @default(normal_user)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Store owner relation (store_owner has one store)
-  ownedStore Store?   @relation("StoreOwner")
+  ownedStore Store?
 
   // Ratings submitted by this user
   ratings   Rating[]
@@ -38,14 +38,14 @@ model User {
 }
 
 model Store {
-  id        String   @id @default(uuid())
-  name      String   @db.VarChar(60)
-  email     String   @unique @db.VarChar(255)
-  address   String?  @db.VarChar(400)
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String   @unique
+  address   String?
 
   // Owner: a store_owner user linked to this store
-  ownerId   String?  @unique @map("owner_id")
-  owner     User?    @relation("StoreOwner", fields: [ownerId], references: [id])
+  ownerId   String?  @unique @map("owner_id") @db.ObjectId
+  owner     User?    @relation(fields: [ownerId], references: [id])
 
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -57,15 +57,15 @@ model Store {
 }
 
 model Rating {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  storeId   String   @map("store_id")
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @map("user_id") @db.ObjectId
+  storeId   String   @map("store_id") @db.ObjectId
   rating    Float    // 1.0 to 5.0 (decimals allowed e.g. 3.5)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+  store     Store    @relation(fields: [storeId], references: [id])
 
   @@unique([userId, storeId]) // one rating per user per store
   @@index([storeId])

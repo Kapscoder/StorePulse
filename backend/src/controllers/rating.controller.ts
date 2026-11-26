@@ -5,7 +5,7 @@ import { AuthRequest } from '../middleware/auth.middleware';
 // ── POST /api/ratings ────────────────────────────────────────────
 export const submitRating = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { storeId, rating } = req.body;
+    const { storeId, rating } = req.body as { storeId: string; rating: number };
     const userId = req.user!.id;
 
     const store = await prisma.store.findUnique({ where: { id: storeId } });
@@ -14,11 +14,10 @@ export const submitRating = async (req: AuthRequest, res: Response): Promise<voi
       return;
     }
 
-    // Upsert: create if not exists, update if already rated
     const result = await prisma.rating.upsert({
       where: { userId_storeId: { userId, storeId } },
-      update: { rating: parseFloat(rating) },
-      create: { userId, storeId, rating: parseFloat(rating) },
+      update: { rating: parseFloat(String(rating)) },
+      create: { userId, storeId, rating: parseFloat(String(rating)) },
     });
 
     res.status(201).json({ message: 'Rating submitted', rating: result });
@@ -30,8 +29,8 @@ export const submitRating = async (req: AuthRequest, res: Response): Promise<voi
 // ── PUT /api/ratings/:storeId ────────────────────────────────────
 export const updateRating = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { storeId } = req.params;
-    const { rating } = req.body;
+    const storeId = req.params['storeId'] as string;
+    const { rating } = req.body as { rating: number };
     const userId = req.user!.id;
 
     const existing = await prisma.rating.findUnique({
@@ -45,7 +44,7 @@ export const updateRating = async (req: AuthRequest, res: Response): Promise<voi
 
     const updated = await prisma.rating.update({
       where: { userId_storeId: { userId, storeId } },
-      data: { rating: parseFloat(rating) },
+      data: { rating: parseFloat(String(rating)) },
     });
 
     res.json({ message: 'Rating updated', rating: updated });

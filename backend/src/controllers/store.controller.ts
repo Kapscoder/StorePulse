@@ -1,20 +1,29 @@
 import { Response } from 'express';
 import prisma from '../lib/prisma';
 import { AuthRequest } from '../middleware/auth.middleware';
+import { Prisma } from '@prisma/client';
 
 // ── GET /api/stores ──────────────────────────────────────────────
-// Normal users: list all stores with their overall rating + user's own rating
 export const getStores = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { name, address, sortBy = 'name', sortOrder = 'asc', page = '1', limit = '10' } = req.query as Record<string, string>;
+    const {
+      name, address,
+      sortBy = 'name', sortOrder = 'asc',
+      page = '1', limit = '10',
+    } = req.query as Record<string, string>;
+
     const userId = req.user!.id;
 
-    const where: any = {};
+    const where: Prisma.StoreWhereInput = {};
     if (name) where.name = { contains: name, mode: 'insensitive' };
     if (address) where.address = { contains: address, mode: 'insensitive' };
 
-    const validSortFields = ['name', 'address'];
-    const orderBy = validSortFields.includes(sortBy) ? { [sortBy]: sortOrder === 'desc' ? 'desc' : 'asc' } : { name: 'asc' };
+    const validSort: Record<string, keyof Prisma.StoreOrderByWithRelationInput> = {
+      name: 'name', address: 'address',
+    };
+    const orderField = validSort[sortBy] ?? 'name';
+    const order: Prisma.SortOrder = sortOrder === 'desc' ? 'desc' : 'asc';
+    const orderBy: Prisma.StoreOrderByWithRelationInput = { [orderField]: order };
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const take = parseInt(limit);
@@ -22,11 +31,8 @@ export const getStores = async (req: AuthRequest, res: Response): Promise<void> 
     const [stores, total] = await Promise.all([
       prisma.store.findMany({
         where,
-        select: {
-          id: true, name: true, address: true, email: true,
-          ratings: {
-            select: { rating: true, userId: true },
-          },
+        include: {
+          ratings: { select: { rating: true, userId: true } },
         },
         orderBy,
         skip,
@@ -37,7 +43,7 @@ export const getStores = async (req: AuthRequest, res: Response): Promise<void> 
 
     const result = stores.map((store) => {
       const overallRating = store.ratings.length > 0
-        ? store.ratings.reduce((sum, r) => sum + r.rating, 0) / store.ratings.length
+        ? store.ratings.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / store.ratings.length
         : null;
       const userRating = store.ratings.find((r) => r.userId === userId)?.rating ?? null;
 

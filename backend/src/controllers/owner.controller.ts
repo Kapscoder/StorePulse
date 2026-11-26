@@ -7,7 +7,6 @@ export const getOwnerDashboard = async (req: AuthRequest, res: Response): Promis
   try {
     const userId = req.user!.id;
 
-    // Get the store owned by this user
     const store = await prisma.store.findUnique({
       where: { ownerId: userId },
       include: {
@@ -26,7 +25,7 @@ export const getOwnerDashboard = async (req: AuthRequest, res: Response): Promis
     }
 
     const averageRating = store.ratings.length > 0
-      ? store.ratings.reduce((sum, r) => sum + r.rating, 0) / store.ratings.length
+      ? store.ratings.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / store.ratings.length
       : null;
 
     const raters = store.ratings.map((r) => ({
